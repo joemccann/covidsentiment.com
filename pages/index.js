@@ -6,11 +6,7 @@ import fetch from 'node-fetch'
 
 const colors = {
   red: 'rgb(255, 99, 132)',
-  orange: 'rgb(255, 159, 64)',
-  yellow: 'rgb(255, 205, 86)',
-  green: 'rgb(75, 192, 192)',
-  blue: 'rgb(54, 162, 235)',
-  purple: 'rgb(153, 102, 255)'
+  blue: 'rgb(54, 162, 235)'
 
 }
 
@@ -77,6 +73,31 @@ const Home = ({ points, daily = [] }) => {
     <div className='container'>
       <Head>
         <title>Sentiment Analysis of Covid-19 News Headlines</title>
+        <meta
+          name='description'
+          content='covidsentiment.com is a free website that uses
+          Microsoft Azure Cognitive Services Text Analytics Machine Learning
+          API to display the positive and negative sentiments of
+          coronavirus-related news headlines over time.'
+        />
+        <meta
+          property='og:title'
+          content='Covid19 News Headline Sentiment Analysis'
+        />
+        <meta property='og:site_name' content='covidsentiment.com' />
+        <meta property='og:url' content='https://covidsentiment.com' />
+        <meta
+          property='og:description'
+          content="View the positive and negative sentiments of news
+          headlines surrounding coronavirus. The site uses Microsoft Azure's
+          Cognitive Services Text Analytics Machine Learning
+          API to determine sentiment."
+        />
+        <meta property='og:type' content='article' />
+        <meta
+          property='og:image'
+          content='https://github.com/joemccann/the-cvd-bot/raw/master/assets/img/botpic.jpg'
+        />
       </Head>
 
       <main>
@@ -200,11 +221,12 @@ const Home = ({ points, daily = [] }) => {
 }
 
 const transformToPoints = ({ articles = [], includeCurrentDay = false }) => {
-  if (!articles.length) return { err: new Error('Missing `articles` parameter.') }
+  if (!articles.length) {
+    return { err: new Error('Missing `articles` parameter.') }
+  }
   let denominator = 1
   let positiveAggregate = 0
   let negativeAggregate = 0
-  // let neutralAggregate = 0
   const len = articles.length
 
   const data = {
@@ -252,21 +274,16 @@ const transformToPoints = ({ articles = [], includeCurrentDay = false }) => {
       const now = moment.utc(Date.now()).format('MM-DD-YYYY')
 
       if (moment(thisDay).isSame(now)) {
-        // data.labels[data.labels.length - 1] = null
         positiveAggregate += parseFloat(positive)
         negativeAggregate += parseFloat(negative)
-        // neutralAggregate += parseFloat(neutral)
         //
         // Push averaged data
         //
         const y = firstDay
         const xNeg = (negativeAggregate / denominator).toFixed(4)
         const xPos = (positiveAggregate / denominator).toFixed(4)
-        // const xNeu = (neutralAggregate / denominator).toFixed(4)
         data.datasets[0].data.push({ y, x: xNeg })
         data.datasets[1].data.push({ y, x: xPos })
-        // data.datasets[2].data.push({ y, x: xNeu })
-
         //
         // Update current day and advance to next dataset
         //
@@ -277,8 +294,6 @@ const transformToPoints = ({ articles = [], includeCurrentDay = false }) => {
         denominator = 1
         positiveAggregate = 0
         negativeAggregate = 0
-        // neutralAggregate = 0
-
         return
       }
     }
@@ -291,18 +306,14 @@ const transformToPoints = ({ articles = [], includeCurrentDay = false }) => {
       if (lengthCheck) {
         positiveAggregate += parseFloat(positive)
         negativeAggregate += parseFloat(negative)
-        // neutralAggregate += parseFloat(neutral)
         //
         // Push averaged data
         //
         const y = firstDay
         const xNeg = (negativeAggregate / denominator).toFixed(4)
         const xPos = (positiveAggregate / denominator).toFixed(4)
-        // const xNeu = (neutralAggregate / denominator).toFixed(4)
         data.datasets[0].data.push({ y, x: xNeg })
         data.datasets[1].data.push({ y, x: xPos })
-        // data.datasets[2].data.push({ y, x: xNeu })
-
         return
       }
       //
@@ -314,8 +325,6 @@ const transformToPoints = ({ articles = [], includeCurrentDay = false }) => {
       // const xNeu = (neutralAggregate / denominator).toFixed(4)
       data.datasets[0].data.push({ y, x: xNeg })
       data.datasets[1].data.push({ y, x: xPos })
-      // data.datasets[2].data.push({ y, x: xNeu })
-
       //
       // Update current day and advance to next dataset
       //
@@ -327,14 +336,12 @@ const transformToPoints = ({ articles = [], includeCurrentDay = false }) => {
       denominator = 1
       positiveAggregate = 0
       negativeAggregate = 0
-      // neutralAggregate = 0
     } else {
       //
       // Tally up current days' values
       //
       positiveAggregate += parseFloat(positive)
       negativeAggregate += parseFloat(negative)
-      // neutralAggregate += parseFloat(neutral)
       denominator++
     }
   })
@@ -357,7 +364,6 @@ const transformToDailyPoints = ({ articles = [], mmddyyyy = '' }) => {
   let denominator = 1
   let positiveAggregate = 0
   let negativeAggregate = 0
-  // let neutralAggregate = 0
 
   const TIME_FORMAT = 'MM-DD-YYYY HH:MM z'
 
@@ -542,7 +548,10 @@ export async function getStaticProps () {
   // and push to daily array. Then iterate in react component.
   //
   days.forEach(day => {
-    const { err: dayErr, data: points } = transformToDailyPoints({
+    const {
+      err: dayErr,
+      data: points
+    } = transformToDailyPoints({
       articles,
       mmddyyyy: day
     })
