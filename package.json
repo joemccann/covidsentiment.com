@@ -1,7 +1,6 @@
 {
-	"name": "dashboard-covid-19-news-sentiment",
-	"version": "0.2.1",
-	"private": true,
+	"name": "covidsentiment.com",
+	"version": "0.0.0-dev",
 	"scripts": {
 		"dev": "next",
 		"build": "next build",
