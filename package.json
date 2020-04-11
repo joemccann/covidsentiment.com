@@ -1,0 +1,20 @@
+{
+	"name": "dashboard-covid-19-news-sentiment",
+	"version": "0.2.1",
+	"private": true,
+	"scripts": {
+		"dev": "next",
+		"build": "next build",
+		"start": "next start -p $PORT",
+		"postinstall": "next build"
+	},
+	"dependencies": {
+		"chart.js": "^2.9.3",
+		"moment": "^2.24.0",
+		"next": "9.3.1",
+		"node-fetch": "^2.6.0",
+		"react": "16.13.1",
+		"react-chartjs-2": "^2.9.0",
+		"react-dom": "16.13.1"
+	}
+}
