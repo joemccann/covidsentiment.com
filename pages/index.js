@@ -505,7 +505,7 @@ const transformToDailyPoints = ({ articles = [], mmddyyyy = '' }) => {
   return { data }
 }
 
-export async function getStaticProps () {
+export async function getServerSideProps () {
   const url = [
     'https://covid-19-sentiment.azureedge.net/',
     'covid-19-sentiment-container/merged.json']
