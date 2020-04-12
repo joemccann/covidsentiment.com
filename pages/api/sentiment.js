@@ -5,11 +5,8 @@ const url = [
   'covid-19-sentiment-container/merged.json']
   .join('')
 
-export default (_, res) => {
-  // a slow endpoint for getting repo data
-  fetch(url)
-    .then(resp => resp.json())
-    .then(data => {
-      res.json(data)
-    })
+export default async (_, res) => {
+  const resp = await fetch(url)
+  const data = await resp.json()
+  res.json(data)
 }

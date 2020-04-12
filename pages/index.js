@@ -355,11 +355,15 @@ const transformToDailyPoints = ({ articles = [], mmddyyyy = '' }) => {
 }
 
 const Home = () => {
-  const { data } = useSWR('/api/sentiment', fetch)
+  const { error, data } = useSWR('/api/sentiment', fetch)
 
   let sentiment = null
 
-  if (data) sentiment = transform(data)
+  if (data && !error) sentiment = transform(data)
+
+  let h3 = null
+  if (!data && !error) h3 = <h3>Fetching a massive dataset. Please be patient.</h3>
+  if (error && !data) h3 = <h3>Error fetching data. Please refresh to try again.</h3>
 
   return (
     <div>
@@ -408,11 +412,9 @@ const Home = () => {
            https://t.me/covid_19_updates
           </a>
         </p>
-
         {
-          !data ? <h3>Fetching a massive dataset. Please be patient.</h3>
-
-            : <div>
+          h3 ||
+            <div>
               <h3>Daily Mean for All Scores</h3>
               <BarChart
                 type='horizontalBar'
