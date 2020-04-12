@@ -2,7 +2,8 @@ import Head from 'next/head'
 import BarChart from '../components/bar-chart'
 import moment from 'moment'
 import React from 'react'
-import fetch from 'node-fetch'
+import fetch from '../libs/fetch'
+import useSWR from 'swr'
 
 const colors = {
   red: 'rgb(255, 99, 132)',
@@ -64,158 +65,6 @@ const DailyList = (props) => {
   return (
     <div>
       {listItems}
-    </div>
-  )
-}
-
-const Home = ({ points, daily = [] }) => {
-  return (
-    <div className='container'>
-      <Head>
-        <title>Sentiment Analysis of Covid-19 News Headlines</title>
-        <meta
-          name='description'
-          content='covidsentiment.com is a free website that uses
-          Microsoft Azure Cognitive Services Text Analytics Machine Learning
-          API to display the positive and negative sentiments of
-          coronavirus-related news headlines over time.'
-        />
-        <meta
-          property='og:title'
-          content='Covid19 News Headline Sentiment Analysis'
-        />
-        <meta property='og:site_name' content='covidsentiment.com' />
-        <meta property='og:url' content='https://covidsentiment.com' />
-        <meta
-          property='og:description'
-          content="View the positive and negative sentiments of news
-          headlines surrounding coronavirus. The site uses Microsoft Azure's
-          Cognitive Services Text Analytics Machine Learning
-          API to determine sentiment."
-        />
-        <meta property='og:type' content='article' />
-        <meta
-          property='og:image'
-          content='https://github.com/joemccann/the-cvd-bot/raw/master/assets/img/botpic.jpg'
-        />
-      </Head>
-
-      <main>
-        <h1 className='title'>
-        Sentiment Analysis of Covid-19 News Headlines
-        </h1>
-
-        <p className='description'>
-        Sourced from&nbsp;
-          <a
-            href='https://t.me/s/covid_19_updates'
-            rel='noopener noreferrer'
-            target='_blank'
-          >
-           https://t.me/covid_19_updates
-          </a>
-        </p>
-
-        <div>
-          <h3>Daily Mean for All Scores</h3>
-          <BarChart
-            type='horizontalBar'
-            data={points}
-            options={options}
-          />
-          <div className='footer'>
-            <a
-              href='https://twitter.com/joemccann'
-              target='_blank'
-              rel='noopener noreferrer'
-            >
-        Made by @joemccann
-            </a>
-          </div>
-
-        </div>
-
-        <DailyList data={daily} />
-      </main>
-
-      <style jsx global>{`
-      html,
-      body {
-        padding: 0;
-        margin: 0;
-        font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
-          Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
-      }
-
-      * {
-        box-sizing: border-box;
-      }
-
-      .container {
-        min-height: 100vh;
-        padding: 1% 6%;
-      }
-
-      main {
-        flex-grow: 1;
-      }
-
-      .footer {
-        width: 100%;
-        height: 50px;
-        border-top: 1px solid #eaeaea;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
-
-      .footer a {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
-
-      a {
-        color: 'rgb(54, 162, 235);
-        text-decoration: none;
-      }
-
-      a:visited {
-        color: 'rgb(54, 162, 235);
-        text-decoration: none;
-      }
-
-      .title a {
-        color: #0070f3;
-        text-decoration: none;
-      }
-
-
-      @media (max-width: 600px) {
-        .grid {
-          width: 100%;
-          flex-direction: column;
-        }
-      }
-
-      .footer {
-        width: 100%;
-        height: 50px;
-        border-top: 1px solid #eaeaea;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
-
-      .footer a {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
-
-
-    `}
-      </style>
     </div>
   )
 }
@@ -505,16 +354,172 @@ const transformToDailyPoints = ({ articles = [], mmddyyyy = '' }) => {
   return { data }
 }
 
-export async function getServerSideProps () {
-  const url = [
-    'https://covid-19-sentiment.azureedge.net/',
-    'covid-19-sentiment-container/merged.json']
-    .join('')
+const Home = () => {
+  const { data } = useSWR('/api/sentiment', fetch)
 
-  const res = await fetch(url)
-  const json = await res.json()
+  let sentiment = null
 
+  if (data) sentiment = transform(data)
+
+  return (
+    <div>
+      <Head>
+        <title>Sentiment Analysis of Covid-19 News Headlines</title>
+        <meta
+          name='description'
+          content='covidsentiment.com is a free website that uses
+          Microsoft Azure Cognitive Services Text Analytics Machine Learning
+          API to display the positive and negative sentiments of
+          coronavirus-related news headlines over time.'
+        />
+        <meta
+          property='og:title'
+          content='Covid19 News Headline Sentiment Analysis'
+        />
+        <meta property='og:site_name' content='covidsentiment.com' />
+        <meta property='og:url' content='https://covidsentiment.com' />
+        <meta
+          property='og:description'
+          content="View the positive and negative sentiments of news
+          headlines surrounding coronavirus. The site uses Microsoft Azure's
+          Cognitive Services Text Analytics Machine Learning
+          API to determine sentiment."
+        />
+        <meta property='og:type' content='article' />
+        <meta
+          property='og:image'
+          content='https://github.com/joemccann/the-cvd-bot/raw/master/assets/img/botpic.jpg'
+        />
+      </Head>
+
+      <main className='container'>
+
+        <h1 className='title'>
+        Sentiment Analysis of Covid-19 News Headlines
+        </h1>
+
+        <p className='description'>
+        Sourced from&nbsp;
+          <a
+            href='https://t.me/s/covid_19_updates'
+            rel='noopener noreferrer'
+            target='_blank'
+          >
+           https://t.me/covid_19_updates
+          </a>
+        </p>
+
+        {
+          !data ? <h3>Fetching a massive dataset. Please be patient.</h3>
+
+            : <div>
+              <h3>Daily Mean for All Scores</h3>
+              <BarChart
+                type='horizontalBar'
+                data={sentiment.points}
+                options={options}
+              />
+              <div className='footer'>
+                <a
+                  href='https://twitter.com/joemccann'
+                  target='_blank'
+                  rel='noopener noreferrer'
+                >
+        Made by @joemccann
+                </a>
+              </div>
+
+              <DailyList data={sentiment.daily} />
+            </div>
+        }
+
+      </main>
+
+      <style jsx global>{`
+      html,
+      body {
+        padding: 0;
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
+          Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      .container {
+        min-height: 100vh;
+        padding: 1% 6%;
+      }
+
+      main {
+        flex-grow: 1;
+      }
+
+      .footer {
+        width: 100%;
+        height: 50px;
+        border-top: 1px solid #eaeaea;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .footer a {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      a {
+        color: 'rgb(54, 162, 235);
+        text-decoration: none;
+      }
+
+      a:visited {
+        color: 'rgb(54, 162, 235);
+        text-decoration: none;
+      }
+
+      .title a {
+        color: #0070f3;
+        text-decoration: none;
+      }
+
+
+      @media (max-width: 600px) {
+        .grid {
+          width: 100%;
+          flex-direction: column;
+        }
+      }
+
+      .footer {
+        width: 100%;
+        height: 50px;
+        border-top: 1px solid #eaeaea;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .footer a {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+
+    `}
+      </style>
+    </div>
+  )
+}
+
+const transform = (json) => {
   const articles = []
+  const daily = []
 
   //
   // We remove the first date because it doesn't
@@ -532,11 +537,8 @@ export async function getServerSideProps () {
     articles
   })
 
-  if (pointsErr) console.error(pointsErr)
-
-  const props = {
-    points,
-    daily: []
+  if (pointsErr) {
+    return { err: pointsErr }
   }
 
   const today = [moment(Date.now()).format('MM-DD-YYYY')]
@@ -558,12 +560,12 @@ export async function getServerSideProps () {
 
     points.timestamp = day
 
-    props.daily.push(points)
+    daily.push(points)
 
-    if (dayErr) console.error(dayErr)
+    if (dayErr) return { err: dayErr }
   })
 
-  return { props }
+  return { points, daily }
 }
 
 export default Home
